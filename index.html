@@ -630,7 +630,7 @@ function renderFile(){
   if (!d){ f.innerHTML = `<p class="empty">왼쪽 목록에서 디지몬을 고르면 필살기와 SS(서포트스킬)가 여기 표시돼요.</p>`; return; }
   f.innerHTML = `
     <button class="back" id="back">← 목록</button>
-    <div class="title-row">${d.icon ? `<img class="ico big" src="${d.icon}" alt="" width="56" height="56">` : ""}${d.no ? `<span class="no">No.${pad(d.no)}${d.no_guess ? ' <span class="why">(번호 확인 필요)</span>' : ''}</span>` : ''}<h2>${esc(d.name)}</h2>${d.official ? `<a class="offlink" href="https://digimon.net/reference_ko/detail.php?directory_name=${encodeURIComponent(d.official)}" target="_blank" rel="noopener">공식 도감 ↗</a>` : ''}<a class="offlink card" href="https://digimoncard.co.kr/?mid=cardlist&multi_extra_search=Y&title=${encodeURIComponent(d.card || d.name)}" target="_blank" rel="noopener" title="디지몬 카드게임 공식 카드리스트에서 ‘${esc(d.card || d.name)}’ 검색">카드리스트 ↗</a></div>
+    <div class="title-row">${d.icon ? `<img class="ico big" src="${d.icon}" alt="" width="56" height="56">` : ""}${d.no ? `<span class="no">No.${pad(d.no)}${d.no_guess ? ' <span class="why">(번호 확인 필요)</span>' : ''}</span>` : ''}<h2>${esc(d.name)}</h2>${d.official ? `<a class="offlink" href="https://digimon.net/reference_ko/detail.php?directory_name=${encodeURIComponent(d.official)}" target="_blank" rel="noopener">공식 도감 ↗</a>` : ''}${d.stage !== '유년기I' ? `<a class="offlink card" href="https://digimoncard.co.kr/?mid=cardlist&multi_extra_search=Y&title=${encodeURIComponent(d.card || d.name)}" target="_blank" rel="noopener" title="디지몬 카드게임 공식 카드리스트에서 ‘${esc(d.card || d.name)}’ 검색">카드리스트 ↗</a>` : ''}</div>
     <dl class="stats five">
       <div><dt>세대</dt><dd>${esc(d.stage)}</dd></div>
       <div><dt>종족</dt><dd>${esc(d.tribe)}</dd></div>
