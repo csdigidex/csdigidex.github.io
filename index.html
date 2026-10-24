@@ -257,6 +257,7 @@ button.chip{cursor:pointer;color:var(--accent);font-weight:600;border-color:var(
 .tag.ko{background:#e5484d;color:#fff;border-color:#e5484d}
 .learn{width:100%;border-collapse:collapse;font-size:13px;margin:4px 0 10px}.learn th,.learn td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left}.learn th{color:var(--muted);font-weight:500}.learn .n{text-align:right;font-variant-numeric:tabular-nums;width:64px}
 .tree-wrap{max-width:100%}
+.tb{display:inline-flex;align-items:center;gap:4px}.tb svg{fill:currentColor;flex:none;opacity:.8}
 </style>
 </head>
 <body>
@@ -361,6 +362,8 @@ const EL = {"불":"--el-fire","물":"--el-water","바람":"--el-wind","땅":"--e
 const STAGES = ["유년기I","유년기II","성장기","성숙기","완전체","궁극체","초궁극체","아머체","하이브리드"];
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const TB = {"백신":["--tb-vac",'<path fill-rule="evenodd" d="M8 1.8a6.2 6.2 0 1 1 0 12.4A6.2 6.2 0 0 1 8 1.8zm0 2.4a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6z"/>'],"데이터":["--tb-dat",'<rect x="2.8" y="2.8" width="10.4" height="10.4" rx="1.2"/>'],"바이러스":["--tb-vir",'<path d="M8 1.5 9.6 5.3 13.6 4 11.4 7.6 14.5 10.3 10.4 10.6 9.9 14.6 8 11.1 6.1 14.6 5.6 10.6 1.5 10.3 4.6 7.6 2.4 4 6.4 5.3z"/>'],"프리":["--tb-free",'<rect x="2.5" y="6.5" width="11" height="3" rx="1.5"/>']};
+const tb = n => { const t = TB[n]; return t ? `<span class="tb" style="--c:var(${t[0]})"><svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">${t[1]}</svg>${esc(n)}</span>` : esc(n); };
 const el = n => `<span class="el" style="--c:var(${EL[n]||'--el-null'})">${esc(n)}</span>`;
 const ptag = (p, big) => p ? `<span class="tag${big?' big':''}">${p} 관통</span>` : '';
 const hasP = d => !d.ph && d.signatures.some(s => s.pierce);
@@ -395,7 +398,8 @@ let state = { sel: null, tab: 'dex' };
 try { const s = JSON.parse(localStorage.getItem('cs-dex') || '{}'); if (s.sel) state.sel = s.sel; } catch(e){}
 const save = () => { try { localStorage.setItem('cs-dex', JSON.stringify({sel: state.sel})); } catch(e){} };
 
-function fillSelect(id, vals){ const s = $(id); vals.forEach(v => { const o = document.createElement('option'); o.value = o.textContent = v; s.appendChild(o); }); }
+const TBSYM = {"백신":"◎","데이터":"■","바이러스":"✸","프리":"▬"};
+function fillSelect(id, vals){ const s = $(id); vals.forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = (TBSYM[v] ? TBSYM[v] + ' ' : '') + v; s.appendChild(o); }); }
 const uniq = a => [...new Set(a)];
 fillSelect('#f-attr', uniq(ALL.map(d => d.attr)).sort());
 fillSelect('#f-tribe', ["백신","데이터","바이러스","프리"].filter(t => ALL.some(d => d.tribe === t)));
@@ -442,7 +446,7 @@ function renderList(){
     </button>` : `
     <button class="row" data-name="${esc(d.name)}" aria-current="${d.name===state.sel}">
       <span class="nm">${d.icon ? `<img class="ico" src="${d.icon}" alt="" width="32" height="32" loading="lazy">` : `<span class="ico ph" aria-hidden="true"></span>`}<span>${d.no ? `<span class="no">No.${pad(d.no)}</span>` : ""}${esc(d.name)}</span></span><span class="mem">MEM ${d.memory}</span>
-      <span class="sub">${esc(d.stage)} · ${esc(d.tribe)} · ${el(d.attr)} ${uniq(d.signatures.map(s=>s.pierce).filter(Boolean)).map(p=>ptag(p)).join(' ')}${hasK(d) ? ' '+ktag() : ''}</span>
+      <span class="sub">${esc(d.stage)} · ${tb(d.tribe)} · ${el(d.attr)} ${uniq(d.signatures.map(s=>s.pierce).filter(Boolean)).map(p=>ptag(p)).join(' ')}${hasK(d) ? ' '+ktag() : ''}</span>
     </button>`).join('');
   return rows;
 }
@@ -633,7 +637,7 @@ function renderFile(){
     <div class="title-row">${d.icon ? `<img class="ico big" src="${d.icon}" alt="" width="56" height="56">` : ""}${d.no ? `<span class="no">No.${pad(d.no)}${d.no_guess ? ' <span class="why">(번호 확인 필요)</span>' : ''}</span>` : ''}<h2>${esc(d.name)}</h2>${d.official ? `<a class="offlink" href="https://digimon.net/reference_ko/detail.php?directory_name=${encodeURIComponent(d.official)}" target="_blank" rel="noopener">공식 도감 ↗</a>` : ''}${d.stage !== '유년기I' ? `<a class="offlink card" href="https://digimoncard.co.kr/?mid=cardlist&multi_extra_search=Y&title=${encodeURIComponent(d.card || d.name)}" target="_blank" rel="noopener" title="디지몬 카드게임 공식 카드리스트에서 ‘${esc(d.card || d.name)}’ 검색">카드리스트 ↗</a>` : ''}</div>
     <dl class="stats five">
       <div><dt>세대</dt><dd>${esc(d.stage)}</dd></div>
-      <div><dt>종족</dt><dd>${esc(d.tribe)}</dd></div>
+      <div><dt>종족</dt><dd>${tb(d.tribe)}</dd></div>
       <div><dt>속성</dt><dd>${el(d.attr)}</dd></div>
       <div><dt>소비 메모리</dt><dd class="num">${d.memory}</dd></div>
       <div><dt>장비 슬롯</dt><dd class="num">${d.slots ?? '–'}</dd></div>
@@ -665,7 +669,7 @@ function renderPierce(){
 
 function fillMu(){
   const tribes = ["백신","데이터","바이러스","프리"], attrs = ["불","물","풀","전기","바람","땅","빛","어둠","무"];
-  $('#mu-tribe').innerHTML = tribes.map(t => `<option>${t}</option>`).join('');
+  $('#mu-tribe').innerHTML = tribes.map(t => `<option value="${t}">${TBSYM[t]} ${t}</option>`).join('');
   $('#mu-attr').innerHTML = attrs.map(a => `<option>${a}</option>`).join('');
   [...ALL].sort((a,b) => a.name.localeCompare(b.name,'ko')).forEach(d => { const o = document.createElement('option'); o.value = d.name; o.textContent = `${d.name} (${d.tribe}·${d.attr})`; $('#mu-pick').appendChild(o); });
   $('#mu-tribe').value = '바이러스'; $('#mu-attr').value = '어둠';
@@ -722,7 +726,7 @@ function renderMu(){
   }));
   rows.sort((x,y) => y.m - x.m || (!!y.s.pierce - !!x.s.pierce) || x.d.name.localeCompare(y.d.name,'ko'));
   $('#mutbl').innerHTML = `<thead><tr><th class="n">배율</th><th>필살기</th><th>디지몬</th><th>관통</th><th>속성</th><th>범위</th><th>위력</th><th class="n">SP</th></tr></thead><tbody>` +
-    (rows.length ? rows.map(({d,s,m,why}) => `<tr><td class="n"><span class="mult ${m>=2?'hi':m<1?'lo':''}">×${(Math.round(m*100)/100).toFixed(2)}</span><div class="why">${why.join(' · ') || '상성 없음'}</div></td><td>${esc(s.name)}</td><td><button data-go="${esc(d.name)}">${esc(d.name)}</button><div class="why">${esc(d.tribe)} · ${esc(d.attr)}</div></td><td>${ptag(s.pierce) || '<span class="why">–</span>'}</td><td>${el(s.el)}</td><td>${esc(s.target||'–')}</td><td>${esc(s.power||'–')}</td><td class="n">${s.sp}</td></tr>`).join('')
+    (rows.length ? rows.map(({d,s,m,why}) => `<tr><td class="n"><span class="mult ${m>=2?'hi':m<1?'lo':''}">×${(Math.round(m*100)/100).toFixed(2)}</span><div class="why">${why.join(' · ') || '상성 없음'}</div></td><td>${esc(s.name)}</td><td><button data-go="${esc(d.name)}">${esc(d.name)}</button><div class="why">${tb(d.tribe)} · ${el(d.attr)}</div></td><td>${ptag(s.pierce) || '<span class="why">–</span>'}</td><td>${el(s.el)}</td><td>${esc(s.target||'–')}</td><td>${esc(s.power||'–')}</td><td class="n">${s.sp}</td></tr>`).join('')
     : `<tr><td colspan="8" class="why">조건에 맞는 필살기가 없어요.</td></tr>`) + `</tbody>`;
 }
 function setTab(t){
