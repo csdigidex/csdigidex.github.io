@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1"><script data-goatcounter="https://csdigidex.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <meta name="description" content="디지몬 스토리 사이버 슬루스 도감 — 사이버 슬루스 디지몬 304종의 필살기·관통 필살기·즉사기·SS(서포트스킬)·계승기·Lv.99 스테이터스·진화/퇴화 트리와 아이템 정보를 한국어로 정리한 팬 공략 사이트">
 <link rel="canonical" href="https://csdigidex.github.io/">
 <meta property="og:type" content="website">
@@ -711,6 +711,7 @@ function renderMu(){
     (rows.length ? rows.map(({d,s,m,why}) => `<tr><td class="n"><span class="mult ${m>=2?'hi':m<1?'lo':''}">×${(Math.round(m*100)/100).toFixed(2)}</span><div class="why">${why.join(' · ') || '상성 없음'}</div></td><td>${esc(s.name)}</td><td><button data-go="${esc(d.name)}">${esc(d.name)}</button><div class="why">${tb(d.tribe)} · ${el(d.attr)}</div></td><td>${ptag(s.pierce) || '<span class="why">–</span>'}</td><td>${el(s.el)}</td><td>${esc(s.target||'–')}</td><td>${esc(s.power||'–')}</td><td class="n">${s.sp}</td></tr>`).join('')
     : `<tr><td colspan="8" class="why">조건에 맞는 필살기가 없어요.</td></tr>`) + `</tbody>`;
 }
+const gc = (path, title) => { try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path, title: title || path, event: true }); } catch(e){} };
 function setTab(t){
   state.tab = t;
   ['dex','rk','it'].forEach(k => $('#tab-'+k).setAttribute('aria-selected', t===k));
@@ -724,13 +725,17 @@ function select(name, open){
   state.sel = name; save(); renderList(); renderFile(); const fl = $('#file'); if (fl && window.innerWidth > 760) fl.scrollTop = 0;
   try { const d = BYNAME[name]; if (d && d.no && open) history.replaceState(null, '', '#d/' + d.no); } catch(e){}
   if (open) $('#file').dataset.open = 'true';
+  if (open) gc('디지몬/' + name);
 }
+document.addEventListener('click', e => { const a = e.target.closest('a.offlink'); if (a) gc(a.classList.contains('card') ? '링크/카드리스트' : '링크/공식도감', a.closest('.title-row') ? (a.closest('.title-row').querySelector('h2')||{}).textContent : ''); });
+['#f-pierce','#f-ko','#rk-pierce'].forEach(id => $(id).addEventListener('change', e => { if (e.target.checked) gc('체크/' + e.target.parentNode.textContent.trim()); }));
+let _gq; $('#q').addEventListener('input', e => { clearTimeout(_gq); const v = e.target.value.trim(); if (v) _gq = setTimeout(() => gc('검색/' + v), 2000); });
 
 $('#list').addEventListener('click', e => { const r = e.target.closest('.row'); if (r) select(r.dataset.name, true); });
 ['#q','#f-attr','#f-tribe','#f-stage','#f-pierce','#f-ko','#f-sort'].forEach(id => $(id).addEventListener('input', renderList));
-$('#tab-dex').onclick = () => setTab('dex');
-$('#tab-rk').onclick = () => setTab('rk');
-$('#tab-it').onclick = () => setTab('it');
+$('#tab-dex').onclick = () => { setTab('dex'); gc('탭/도감'); };
+$('#tab-rk').onclick = () => { setTab('rk'); gc('탭/스탯 랭킹'); };
+$('#tab-it').onclick = () => { setTab('it'); gc('탭/아이템'); };
 let itTab = '';
 function renderIt(){
   const IT = (DB.items || []).slice().sort((a,b) => a.order - b.order), q = norm($('#it-q').value.trim());
@@ -744,7 +749,7 @@ function renderIt(){
     return `<h3 class="it-h">${esc(g)} <span class="why">${esc(tb_)} · ${rs.length}</span></h3>
     <div class="tblwrap"><table class="learn it-t"><thead><tr><th>아이템</th><th>효과</th><th class="n">디지랩 가격</th></tr></thead><tbody>${rs.map(x => `<tr><td><span class="it-n">${x.icon ? `<img src="${x.icon}" alt="" width="28" height="28" loading="lazy">` : '<span class="it-ph"></span>'}<b>${esc(x.name)}</b></span>${x.el ? ' '+el(x.el) : ''}${x.tier===2 ? ' <span class="chip-m ss">상위</span>' : ''}</td><td>${x.desc ? esc(x.desc) : '<span class="why">설명 준비 중</span>'}${x.note ? `<div class="why">${esc(x.note)}</div>` : ''}</td><td class="n" style="white-space:nowrap;width:auto">${x.price ? yen(x.price) : '<span class="why">–</span>'}</td></tr>`).join('')}</tbody></table></div>`; }).join('');
 }
-$('#it-tabs').addEventListener('click', e => { const b = e.target.closest('[data-itt]'); if (b){ itTab = b.dataset.itt; renderIt(); } });
+$('#it-tabs').addEventListener('click', e => { const b = e.target.closest('[data-itt]'); if (b){ itTab = b.dataset.itt; renderIt(); gc('아이템탭/' + (itTab || '전체')); } });
 $('#it-q').addEventListener('input', renderIt);
 $('#rk-stat').addEventListener('click', e => { const b = e.target.closest('[data-rk]'); if (b){ rkStat = b.dataset.rk; renderRk(); } });
 ['#rk-stage','#rk-pierce'].forEach(id => $(id).addEventListener('input', renderRk));
