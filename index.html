@@ -408,7 +408,7 @@ const tb = n => { const t = TB[n]; return t ? `<span class="tb" style="--c:var($
 const el = n => `<span class="el" style="--c:var(${EL[n]||'--el-null'})">${esc(n)}</span>`;
 const ptag = (p, big) => p ? `<span class="tag${big?' big':''}">${p} 관통</span>` : '';
 const hasP = d => !d.ph && d.signatures.some(s => s.pierce);
-const isKO = s => /즉사/.test(s.desc||'');
+const isKO = s => /즉사/.test((s.desc||'').replace(/즉사(를|은)? ?제외/g,''));
 const hasK = d => !d.ph && d.signatures.some(isKO);
 const ktag = () => '<span class="tag ko">즉사</span>';
 
