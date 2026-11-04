@@ -164,6 +164,7 @@ td.n,th.n{text-align:right;font-family:var(--f-mono);white-space:nowrap}
 .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
 .lvnote{font-size:12px;color:var(--muted);margin:0 0 8px}
 .pre{display:flex;flex-wrap:wrap;gap:6px}
+.evo2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}.evo2>div{min-width:0}@media (max-width:640px){.evo2{grid-template-columns:1fr}}
 .evg{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr));gap:8px}
 .evc{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
 .evc img,.evi{width:40px;height:40px;border-radius:8px;flex:none}.evi.ph{display:inline-block;background:var(--line)}
@@ -649,7 +650,7 @@ const evoCard = (n, conds, note) => { const x = BYNAME[n];
   return `<div class="evc">${ic}<div>${nm}${note ? ` <span class="why">· ${esc(note)}</span>` : ''}${conds && conds.length ? `<ul>${conds.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : '<p class="why" style="margin:2px 0 0">조건 정보 준비 중</p>'}</div></div>`; };
 const condTo = (from, to) => ((BYNAME[from]||{}).cond||{})[to];
 function preBlock(d){
-  let out = '';
+  let out = '', R = '';
   const from = ALL.filter(x => (x.next||[]).some(t => t.name === d.name)).map(x => x.name);
   if (Array.isArray(d.pre) && d.pre.length === 0) {
     out += `<div class="sec">진화 전 디지몬 (퇴화)</div><p class="lvnote">유년기I은 더 이상 퇴화할 수 없어요.</p>`;
@@ -661,12 +662,13 @@ function preBlock(d){
     out += `<div class="sec">이 디지몬으로 진화하는 디지몬 (확인된 것만)</div><div class="evg">${extra.map(n => evoCard(n, condTo(n, d.name))).join('')}</div>`;
   }
   if (Array.isArray(d.next) && d.next.length === 0) {
-    out += `<div class="sec">진화 가능 디지몬</div><p class="lvnote">더 이상 진화할 수 없어요.</p>`;
+    R += `<div class="sec">진화 가능 디지몬</div><p class="lvnote">더 이상 진화할 수 없어요.</p>`;
   }
   if (d.next && d.next.length) {
-    out += `<div class="sec">진화 가능 디지몬 ${d.next.length}</div><div class="evg">${d.next.map(t => evoCard(t.name, (d.cond||{})[t.name], t.note)).join('')}</div>`;
+    R += `<div class="sec">진화 가능 디지몬 ${d.next.length}</div><div class="evg">${d.next.map(t => evoCard(t.name, (d.cond||{})[t.name], t.note)).join('')}</div>`;
   }
-  return out;
+  if (!out && !R) return '';
+  return `<div class="evo2"><div>${out || '<div class="sec">진화 전 디지몬</div><p class="lvnote">정보 준비 중</p>'}</div><div>${R || '<div class="sec">진화 가능 디지몬</div><p class="lvnote">정보 준비 중</p>'}</div></div>`;
 }
 function renderFile(){
   const f = $('#file');
