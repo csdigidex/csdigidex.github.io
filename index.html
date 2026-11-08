@@ -363,7 +363,7 @@ button.chip{cursor:pointer;color:var(--accent);font-weight:600;border-color:var(
     </div>
   </section>
   <section id="view-pt" class="mu" hidden>
-    <iframe id="pt-frame" title="파트너 디지몬 테스트" allow="clipboard-write; web-share" style="width:100%;border:0;min-height:80vh;display:block;background:transparent" loading="lazy"></iframe>
+    <iframe id="pt-frame" title="파트너 디지몬 테스트" allow="clipboard-write; web-share" style="width:100%;border:0;min-height:80vh;display:block;background:transparent"></iframe>
     <p class="why" style="text-align:center;margin:8px 0 24px">화면이 보이지 않으면 <a href="https://csdigidex.github.io/test/" target="_blank" rel="noopener">파트너 디지몬 테스트를 새 창에서 열기</a></p>
   </section>
   <section id="view-it" class="mu" hidden>
@@ -792,7 +792,7 @@ function setTab(t){
   state.tab = t;
   ['dex','rk','it','gd','pt'].forEach(k => { $('#tab-'+k).setAttribute('aria-selected', t===k); $('#view-'+k).hidden = t !== k; });
   document.querySelector('.searchrow').hidden = t !== 'dex';
-  if (t === 'pt') { const f = $('#pt-frame'); if (!f.src) f.src = (/github\.io$/.test(location.hostname) ? '/test/' : 'https://csdigidex.github.io/test/') + '?embed=1'; }
+  if (t === 'pt') { const f = $('#pt-frame'); if (!f.src) f.src = '/test/?embed=1'; }
   try { history.replaceState(null, '', t === 'pt' ? '#test' : (location.hash === '#test' ? location.pathname : location.href)); } catch(e){}
 }
 window.addEventListener('message', e => { const m = e.data || {}; if (typeof m.ptH === 'number') { const f = $('#pt-frame'); f.style.height = Math.max(m.ptH, 400) + 'px'; if (m.top) f.scrollIntoView({ block: 'start' }); } });
@@ -817,7 +817,7 @@ $('#tab-dex').onclick = () => { setTab('dex'); gc('탭/도감'); };
 $('#tab-rk').onclick = () => { setTab('rk'); gc('탭/스탯 랭킹'); };
 $('#tab-it').onclick = () => { setTab('it'); gc('탭/아이템'); };
 $('#tab-gd').onclick = () => { setTab('gd'); gc('탭/공략'); };
-$('#tab-pt').onclick = () => { setTab('pt'); gc('탭/파트너 테스트'); };
+$('#tab-pt').onclick = () => { gc('탭/파트너 테스트'); if (!/github\.io$|^localhost$/.test(location.hostname)) { window.open('https://csdigidex.github.io/test/', '_blank', 'noopener'); return; } setTab('pt'); };
 if (location.hash === '#test') setTimeout(() => setTab('pt'), 0);
 function tri(nodes, cyc){
   // nodes: [top, right, left] each {n, c, icon}
