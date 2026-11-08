@@ -65,6 +65,7 @@ button,input,select{font:inherit;color:inherit}
 .brand .meta{color:var(--muted);font-size:13px}
 .brand .meta b{font-family:var(--f-mono);font-weight:700;color:var(--ink)}
 .tabs{display:flex;gap:4px;margin-left:auto}
+.tabtest{text-decoration:none;color:#fff!important;background:linear-gradient(135deg,var(--accent),#e8590c)!important;border-color:transparent!important}
 .tab{border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:999px;cursor:pointer;font-size:14px}
 .tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
@@ -321,6 +322,7 @@ button.chip{cursor:pointer;color:var(--accent);font-weight:600;border-color:var(
         <button class="tab" role="tab" id="tab-rk" aria-selected="false">스탯 랭킹</button>
         <button class="tab" role="tab" id="tab-it" aria-selected="false">아이템</button>
         <button class="tab" role="tab" id="tab-gd" aria-selected="false">공략</button>
+        <a class="tab tabtest" href="https://csdigidex.github.io/test/" target="_blank" rel="noopener" onclick="gc&&gc('nav/test')">✨ 파트너 테스트</a>
       </div>
     </div>
     <div class="searchrow">
