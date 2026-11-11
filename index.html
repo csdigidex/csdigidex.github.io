@@ -186,6 +186,8 @@ td.n,th.n{text-align:right;font-family:var(--f-mono);white-space:nowrap}
 .rt-node.end{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 .rt-edge{margin:0 0 0 30px;padding:6px 0 6px 18px;border-left:2px dashed var(--line);font-size:13px}
 .rt-edge b{font-size:12.5px}.rt-edge.up b{color:var(--accent)}.rt-edge.dn b{color:#e8590c}.rt-edge.md b{color:#7950f2}
+.rt-edge li.ok{color:var(--muted)}.rt-edge li.ng{color:var(--ink);font-weight:600}.rt-v{font-size:12px;font-weight:400;color:var(--muted)}.rt-edge .rt-v b{color:#e8590c;font-weight:700}
+.rt-tag{font-size:11.5px;padding:1px 8px;border-radius:999px;background:#e8590c;color:#fff;margin-left:4px;font-weight:700}
 .rt-edge ul{margin:2px 0 0;padding:0;list-style:none;color:var(--muted);line-height:1.55}.rt-edge li.hot{color:var(--ink);font-weight:600}
 .rt-go{margin-top:12px;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;cursor:pointer}.rt-go:hover{background:var(--accent);color:#fff}
 @media (max-width:520px){.rt-ctl{grid-template-columns:1fr;}.rt-sw{justify-self:center;height:34px;transform:rotate(90deg)}}
@@ -883,9 +885,9 @@ function rtFind(a, b, noDedi){
   const paths = [];
   const walk = (n, acc) => { if (paths.length >= 400) return; if (n === a) { paths.push(acc.slice().reverse()); return; } par[n].forEach(p => { acc.push({ from: p.from, to: n, k: p.e.k, c: p.e.c }); walk(p.from, acc); acc.pop(); }); };
   walk(b, []);
-  const sc = p => { const dn = p.filter(s => s.k === 'dn').length, hot = p.filter(s => (s.c || []).some(hotC)).length, abi = Math.max(0, ...p.map(s => abiOf(s.c))), lv = p.reduce((t, s) => t + lvOf(s.c), 0); return [hot, dn, abi, lv]; };
+  const sc = p => { const dn = p.filter(s => s.k === 'dn').length, hot = p.filter(s => (s.c || []).some(hotC)).length, abi = Math.max(0, ...p.map(s => abiOf(s.c))), lv = p.reduce((t, s) => t + lvOf(s.c), 0); const tr = p.filter(s => rtShort(s).length).length; return [hot, dn, tr, abi, lv]; };
   paths.forEach(p => p._s = sc(p));
-  paths.sort((x, y) => { for (let i = 0; i < 4; i++) if (x._s[i] !== y._s[i]) return x._s[i] - y._s[i]; return 0; });
+  paths.sort((x, y) => { for (let i = 0; i < 5; i++) if (x._s[i] !== y._s[i]) return x._s[i] - y._s[i]; return 0; });
   // 서로 다른 루트 위주로 최대 3개
   const pick = [], key = p => p.map(s => s.to).join('>');
   for (const p of paths) { if (pick.length >= 3) break; if (!pick.some(q => key(q) === key(p))) pick.push(p); }
@@ -893,11 +895,23 @@ function rtFind(a, b, noDedi){
 }
 function rtHash(){ return '#route' + (RT.a && RT.b ? '/' + encodeURIComponent(RT.a) + '/' + encodeURIComponent(RT.b) : ''); }
 function rtNode(n, end){ const x = BYNAME[n] || {}; return `<li class="rt-node${end ? ' end' : ''}">${rtIcon(n, 44)}<div><button class="evn" data-rtgo="${esc(n)}">${esc(n)}</button><div class="why">${esc(x.stage || '')} · ${esc(x.tribe || '')} · ${esc(x.attr || '')}</div></div></li>`; }
+const RTST = [[/최대 HP가 (\d+)/,'hp','HP'],[/최대 SP가 (\d+)/,'sp','SP'],[/공격력이 (\d+)/,'atk','공격'],[/방어력이 (\d+)/,'def_','방어'],[/지력이 (\d+)/,'int','지력'],[/민첩이 (\d+)/,'spd','민첩']];
+// Lv.99 기본 스탯으로 이 조건을 넘는지
+function rtStat(from, t){
+  const st = (BYNAME[from] || {}).stats; if (!st) return null;
+  for (const [re, k, lb] of RTST) { const m = t.match(re); if (m && st[k] != null) { const need = +m[1], have = st[k]; return { ok: have >= need, have, need, lb }; } }
+  return null;
+}
+const rtShort = s => s.k === 'up' || s.k === 'md' ? (s.c || []).map(t => rtStat(s.from, t)).filter(x => x && !x.ok) : [];
 function rtEdge(s){
   if (s.k === 'dn') return `<li class="rt-edge dn"><b>▼ 퇴화</b><ul><li>조건 없음 · ${esc(s.to)}을(를) 한 번이라도 발견했어야 해요</li></ul></li>`;
   const lab = s.k === 'md' ? '⇄ 모드 체인지' : '▲ 진화';
-  const c = s.c && s.c.length ? `<ul>${s.c.map(t => `<li${hotC(t) ? ' class="hot"' : ''}>${hotC(t) ? '⚠️ ' : ''}${esc(t)}</li>`).join('')}</ul>` : '<ul><li>조건 정보 준비 중</li></ul>';
-  return `<li class="rt-edge ${s.k}"><b>${lab}</b>${c}</li>`;
+  const li = t => { const v = rtStat(s.from, t);
+    if (v) return `<li class="${v.ok ? 'ok' : 'ng'}">${v.ok ? '✅' : '❌'} ${esc(t)} <span class="rt-v">(Lv.99 기본 ${v.have}${v.ok ? '' : ` · <b>${v.need - v.have} 부족</b>`})</span></li>`;
+    return `<li${hotC(t) ? ' class="hot"' : ''}>${hotC(t) ? '⚠️ ' : ''}${esc(t)}</li>`; };
+  const c = s.c && s.c.length ? `<ul>${s.c.map(li).join('')}</ul>` : '<ul><li>조건 정보 준비 중</li></ul>';
+  const ng = rtShort(s).length;
+  return `<li class="rt-edge ${s.k}"><b>${lab}</b>${ng ? ' <span class="rt-tag">💪 특훈 필요</span>' : ''}${c}</li>`;
 }
 function rtRender(){
   const o = $('#rt-out'); if (!o) return;
@@ -913,12 +927,13 @@ function rtRender(){
   const up = p.filter(s => s.k === 'up').length, dn = p.filter(s => s.k === 'dn').length, md = p.filter(s => s.k === 'md').length;
   const abi = Math.max(0, ...p.map(s => abiOf(s.c))), lv = Math.max(0, ...p.map(s => lvOf(s.c)));
   const hot = p.some(s => (s.c || []).some(hotC));
-  const sum = `<div class="rt-sum"><span>총 <b>${p.length}</b>단계</span><span>진화 ${up}회</span>${dn ? `<span>퇴화 ${dn}회</span>` : ''}${md ? `<span>모드 체인지 ${md}회</span>` : ''}${lv ? `<span>최고 레벨 조건 Lv.${lv}</span>` : ''}${abi ? `<span>최고 재능 조건 ${abi}</span>` : ''}${hot ? '<span class="hot">⚠️ 특수 조건 있음</span>' : ''}</div>`;
+  const trn = p.filter(s => rtShort(s).length).length;
+  const sum = `<div class="rt-sum"><span>총 <b>${p.length}</b>단계</span><span>진화 ${up}회</span>${dn ? `<span>퇴화 ${dn}회</span>` : ''}${md ? `<span>모드 체인지 ${md}회</span>` : ''}${lv ? `<span>최고 레벨 조건 Lv.${lv}</span>` : ''}${abi ? `<span>최고 재능 조건 ${abi}</span>` : ''}${trn ? `<span class="hot">💪 특훈 필요 ${trn}단계</span>` : ''}${hot ? '<span class="hot">⚠️ 특수 조건 있음</span>' : ''}</div><p class="why" style="margin:-4px 0 12px">✅/❌는 진화 전 디지몬의 <b>Lv.99 기본 스탯</b>(재능·특훈 보너스 없음)으로 스탯 조건을 넘는지 비교한 거예요. ❌인 스탯은 레벨만 올려선 부족해서 특훈으로 채워야 해요.</p>`;
   const tabs = r.length > 1 ? `<div class="rt-tabs">${r.map((q, i) => `<button class="tab" aria-selected="${i === RT.k}" data-rtk="${i}">루트 ${i + 1}${i === 0 ? ' · 추천' : ''}</button>`).join('')}</div>` : '';
   let li = rtNode(RT.a);
   p.forEach((s, i) => { li += rtEdge(s) + rtNode(s.to, i === p.length - 1); });
   o.innerHTML = tabs + sum + `<ol class="rt-path">${li}</ol>
-    <p class="why" style="margin-top:12px">💡 사이버 슬루스에서는 진화·퇴화할 때마다 레벨이 1로 돌아가고 <b>재능(ABI)</b>이 올라요. 재능 조건이 높은 단계가 있으면 그 전에 진화·퇴화를 반복해 재능을 미리 올려 두세요. 단계 수가 같으면 특수 조건·퇴화가 적고 재능·레벨 조건이 낮은 루트를 먼저 보여 줘요.</p>`;
+    <p class="why" style="margin-top:12px">💡 사이버 슬루스에서는 진화·퇴화할 때마다 레벨이 1로 돌아가고 <b>재능(ABI)</b>이 올라요. 재능 조건이 높은 단계가 있으면 그 전에 진화·퇴화를 반복해 재능을 미리 올려 두세요. 단계 수가 같으면 특수 조건·퇴화·특훈이 적고 재능·레벨 조건이 낮은 루트를 먼저 보여 줘요.</p>`;
 }
 function rtSuggest(inp, box, key){
   const q = norm(inp.value.trim()); RT.sg = -1;
