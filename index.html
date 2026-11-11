@@ -846,7 +846,7 @@ function select(name, open){
   if (open) $('#file').dataset.open = 'true';
   if (open) gc('디지몬/' + name);
 }
-document.addEventListener('click', e => { const a = e.target.closest('a.offlink'); if (a) gc(a.classList.contains('card') ? '링크/카드리스트' : '링크/공식도감', a.closest('.title-row') ? (a.closest('.title-row').querySelector('h2')||{}).textContent : ''); });
+document.addEventListener('click', e => { const a = e.target.closest('a.offlink'); if (a) { const nm = a.closest('.title-row') ? ((a.closest('.title-row').querySelector('h2')||{}).textContent || '') : ''; gc((a.classList.contains('card') ? '링크/카드리스트' : '링크/공식도감') + (nm ? '/' + nm : ''), nm); } });
 $('#f-util').addEventListener('change', e => { if (e.target.value) gc('편의SS/' + e.target.selectedOptions[0].text); });
 ['#f-pierce','#f-ko','#rk-pierce'].forEach(id => $(id).addEventListener('change', e => { if (e.target.checked) gc('체크/' + e.target.parentNode.textContent.trim()); }));
 let _gq; $('#q').addEventListener('input', e => { clearTimeout(_gq); const v = e.target.value.trim(); if (v) _gq = setTimeout(() => gc('검색/' + v), 2000); });
