@@ -191,6 +191,7 @@ td.n,th.n{text-align:right;font-family:var(--f-mono);white-space:nowrap}
 .rt-edge ul{margin:2px 0 0;padding:0;list-style:none;color:var(--muted);line-height:1.55}.rt-edge li.hot{color:var(--ink);font-weight:600}
 .rt-go{margin-top:12px;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;cursor:pointer}.rt-go:hover{background:var(--accent);color:#fff}
 @media (max-width:520px){.rt-ctl{grid-template-columns:1fr;}.rt-sw{justify-self:center;height:34px;transform:rotate(90deg)}}
+.evi-b{all:unset;cursor:pointer;display:block;line-height:0;border-radius:10px;flex:none}.evi-b:hover img{outline:2px solid var(--accent);outline-offset:1px}.evi-b:focus-visible{outline:2px solid var(--accent)}
 .evg{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr));gap:8px}
 .evc{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
 .evc img,.evi{width:40px;height:40px;border-radius:8px;flex:none}.evi.ph{display:inline-block;background:var(--line)}
@@ -693,9 +694,10 @@ function learnBlock(d){
   return `<div class="sec">계승기 (레벨업 습득) ${L.length}</div><p class="lvnote">이 디지몬이 레벨업으로 배우는 스킬이에요. 배운 스킬은 진화·퇴화해도 계속 쓸 수 있어요.</p>
     <table class="learn"><thead><tr><th class="n">습득 Lv</th><th>스킬</th><th>속성</th><th class="n">SP</th></tr></thead><tbody>${L.map(([n,e,sp,lv,ds]) => `<tr><td class="n">${lv}</td><td>${esc(n)}${ds ? `<div class="why" style="margin-top:2px">${esc(ds)}</div>` : ''}</td><td>${el(e)}</td><td class="n">${sp}</td></tr>`).join('')}</tbody></table>`;
 }
-const evoCard = (n, conds, note) => { const x = BYNAME[n];
+const evoCard = (n, conds, note, pre) => { const x = BYNAME[n]; if (pre) conds = ['이 디지몬을 발견한 적이 있다.'];
   if (n === '???') return `<div class="evc unk"><span class="evi ph"></span><div><b>??? 미해금</b></div></div>`;
-  const ic = x && x.icon ? `<img src="${x.icon}" alt="" width="40" height="40" loading="lazy">` : '<span class="evi ph"></span>';
+  let ic = x && x.icon ? `<img src="${x.icon}" alt="" width="40" height="40" loading="lazy">` : '<span class="evi ph"></span>';
+  if (x) ic = `<button class="evi-b" data-go="${esc(n)}" aria-label="${esc(n)} 보기">${ic}</button>`;
   const nm = x ? `<button class="evn" data-go="${esc(n)}">${esc(n)}</button>` : `<b>${esc(n)}</b>`;
   return `<div class="evc">${ic}<div>${nm}${note ? ` <span class="why">· ${esc(note)}</span>` : ''}${conds && conds.length ? `<ul>${conds.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : '<p class="why" style="margin:2px 0 0">조건 정보 준비 중</p>'}</div></div>`; };
 const condTo = (from, to) => ((BYNAME[from]||{}).cond||{})[to];
@@ -705,7 +707,7 @@ function preBlock(d){
   if (Array.isArray(d.pre) && d.pre.length === 0) {
     out += `<div class="sec">진화 전 디지몬 (퇴화)</div><p class="lvnote">유년기I은 더 이상 퇴화할 수 없어요.</p>`;
   } else if (d.pre) {
-    out += `<div class="sec">진화 전 디지몬 (퇴화 가능) ${d.pre.length}</div><p class="lvnote">퇴화는 그 디지몬을 발견한 적이 있으면 가능해요. 아래 조건은 그 디지몬에서 ${esc(d.name)}(으)로 진화할 때의 조건이에요.</p><div class="evg">${d.pre.map(n => evoCard(n, condTo(n, d.name))).join('')}</div>`;
+    out += `<div class="sec">진화 전 디지몬 (퇴화 가능) ${d.pre.length}</div><div class="evg">${d.pre.map(n => evoCard(n, null, null, true)).join('')}</div>`;
   }
   const extra = from.filter(n => !(d.pre||[]).includes(n));
   if (extra.length) {
