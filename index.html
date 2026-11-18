@@ -356,7 +356,7 @@ button.chip{cursor:pointer;color:var(--accent);font-weight:600;border-color:var(
 .gd-hk td:first-child{white-space:nowrap;font-weight:600}.gd-hk tr.grp td{background:var(--sel);font-weight:700;font-size:12.5px;color:var(--muted)}
 @media (max-width:760px){.gd-body{padding-left:14px}.gd-hk th:nth-child(3),.gd-hk td:nth-child(3){display:none}.gd-hk .req{display:block!important}}
 .gd-tip{padding:10px 12px;border-radius:10px;background:rgba(214,69,61,.08);font-size:14px;line-height:1.6;word-break:keep-all}
-</style>
+.evc.go{cursor:pointer;transition:border-color .15s,background .15s}.evc.go:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,transparent)}.evc.go:active{transform:scale(.995)}</style>
 </head>
 <body>
 
@@ -736,7 +736,7 @@ const evoCard = (n, conds, note, pre) => { const x = BYNAME[n]; if (pre) conds =
   let ic = x && x.icon ? `<img src="${x.icon}" alt="" width="40" height="40" loading="lazy">` : '<span class="evi ph"></span>';
   if (x) ic = `<button class="evi-b" data-go="${esc(n)}" aria-label="${esc(n)} 보기">${ic}</button>`;
   const nm = x ? `<button class="evn" data-go="${esc(n)}">${esc(n)}</button>` : `<b>${esc(n)}</b>`;
-  return `<div class="evc">${ic}<div>${nm}${note ? ` <span class="why">· ${esc(note)}</span>` : ''}${conds && conds.length ? `<ul>${conds.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : '<p class="why" style="margin:2px 0 0">조건 정보 준비 중</p>'}</div></div>`; };
+  return `<div class="evc${x ? ' go' : ''}"${x ? ` data-evgo="${esc(n)}"` : ''}>${ic}<div>${nm}${note ? ` <span class="why">· ${esc(note)}</span>` : ''}${conds && conds.length ? `<ul>${conds.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : '<p class="why" style="margin:2px 0 0">조건 정보 준비 중</p>'}</div></div>`; };
 const condTo = (from, to) => ((BYNAME[from]||{}).cond||{})[to];
 function preBlock(d){
   let out = '', R = '';
@@ -790,6 +790,7 @@ function renderFile(){
 `;
   requestAnimationFrame(() => drawTree(f));
   f.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { foeStage = null; select(b.dataset.go, true); });
+  f.querySelectorAll('[data-evgo]').forEach(c => c.onclick = e => { if (e.target.closest('button,a')) return; foeStage = null; select(c.dataset.evgo, true); });
   f.querySelectorAll('[data-rtto]').forEach(b => b.onclick = () => { RT.b = b.dataset.rtto; $('#rt-b').value = RT.b; gc('루트/도감버튼', RT.b); setTab('rt'); window.scrollTo(0,0); });
   f.querySelectorAll('[data-scope]').forEach(b => b.onclick = () => { rankScope = b.dataset.scope; const y = f.scrollTop, wy = window.scrollY; renderFile(); f.scrollTop = y; window.scrollTo(0, wy); });
   f.querySelectorAll('[data-fst]').forEach(b => b.onclick = () => { foeStage = b.dataset.fst; const y = f.scrollTop, wy = window.scrollY; renderFile(); f.scrollTop = y; window.scrollTo(0, wy); });
