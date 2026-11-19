@@ -33,8 +33,16 @@ def img(m):
 def url(n):
     n=html.unescape(n); return f'{int(NO[n]):03d}.html' if n in NO else '../'
 SCRIPT="""<script>
-(function(){var t=document.querySelector('.tree');function draw(){if(!t)return;var svg=t.querySelector('.tree-svg'),E=JSON.parse(t.dataset.edges),tb=t.getBoundingClientRect();svg.setAttribute('width',t.scrollWidth);svg.setAttribute('height',t.scrollHeight);var P={};t.querySelectorAll('[data-tn]').forEach(function(b){var r=b.getBoundingClientRect();P[b.dataset.tn]={l:r.left-tb.left+t.scrollLeft,r:r.right-tb.left+t.scrollLeft,y:r.top-tb.top+r.height/2}});svg.innerHTML=E.map(function(e){var a=P[e[0]],b=P[e[1]];if(!a||!b)return'';var x1=a.r,x2=b.l,m=(x1+x2)/2;return'<path style="stroke:var(--t'+e[2]+')" d="M'+x1+','+a.y+' C'+m+','+a.y+' '+m+','+b.y+' '+x2+','+b.y+'"/>'}).join('')}
-draw();addEventListener('resize',draw);addEventListener('load',draw);if(document.fonts)document.fonts.ready.then(draw);
+(function(){var t=document.querySelector('.tree');var svg,E,down={},pinned=null;
+function q(s){return t.querySelectorAll(s)}
+function draw(){if(!t)return;svg=t.querySelector('.tree-svg');E=JSON.parse(t.dataset.edges);var tb=t.getBoundingClientRect();svg.setAttribute('width',t.scrollWidth);svg.setAttribute('height',t.scrollHeight);var P={};q('[data-tn]').forEach(function(b){var r=b.getBoundingClientRect();P[b.dataset.tn]={l:r.left-tb.left+t.scrollLeft,r:r.right-tb.left+t.scrollLeft,y:r.top-tb.top+t.scrollTop+r.height/2}});
+svg.innerHTML='';E.forEach(function(e){var a=P[e[0]],b=P[e[1]];if(!a||!b)return;var x1=a.r,x2=b.l,m=(x1+x2)/2,p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('style','stroke:var(--t'+e[2]+')');p.dataset.p=e[0];p.dataset.c=e[1];p.setAttribute('d','M'+x1+','+a.y+' C'+m+','+a.y+' '+m+','+b.y+' '+x2+','+b.y);svg.appendChild(p)});rest()}
+function clear(){t.classList.remove('hl');q('.on,.pin').forEach(function(e){e.classList.remove('on','pin')})}
+function show(b){clear();t.classList.add('hl');var seen={},Q=[b.dataset.tn];seen[b.dataset.tn]=1;while(Q.length){var n=Q.shift();(down[n]||[]).forEach(function(c){svg.querySelectorAll('path').forEach(function(p){if(p.dataset.p===n&&p.dataset.c===c)p.classList.add('on')});if(!seen[c]){seen[c]=1;Q.push(c)}})}q('[data-tn]').forEach(function(x){if(seen[x.dataset.tn])x.classList.add('on')});if(pinned)pinned.classList.add('pin')}
+function rest(){if(pinned)show(pinned);else clear()}
+if(t){JSON.parse(t.dataset.edges).forEach(function(e){(down[e[0]]=down[e[0]]||[]).push(e[1])});
+q('[data-tn]').forEach(function(b){b.onmouseenter=function(){show(b)};b.onmouseleave=rest;b.onclick=function(){if(pinned===b&&b.dataset.thref){location.href=b.dataset.thref;return}pinned=(pinned===b)?null:b;rest()}});
+draw();addEventListener('resize',draw);addEventListener('load',draw);if(document.fonts)document.fonts.ready.then(draw)}
 document.addEventListener('click',function(e){var c=e.target.closest('[data-href]');if(!c||e.target.closest('a,button'))return;location.href=c.dataset.href});})();
 </script>"""
 cnt=0
@@ -62,7 +70,7 @@ for no,raw in snap.items():
         h=h.replace(m.group(0),f'<p class="lvnote" style="margin:4px 0"><b>{lab}</b> · 다른 세대 상대는 도감에서 볼 수 있어요.</p>')
         h=h.replace(' · 세대를 누르면 그 세대 목록이 보여요','')
     h=re.sub(r'<button ([^>]*?)data-go="([^"]*)"([^>]*)>(.*?)</button>',lambda m:f'<a {m.group(1)}href="{url(m.group(2))}"{m.group(3)}>{m.group(4)}</a>',h,flags=re.S)
-    h=re.sub(r'<button ([^>]*?)data-tgo="([^"]*)"([^>]*)>(.*?)</button>',lambda m:f'<a {m.group(1)}href="{url(m.group(2))}"{m.group(3)}>{m.group(4)}</a>',h,flags=re.S)
+    h=re.sub(r'data-tgo="([^"]*)"',lambda m:f'data-tgo="{m.group(1)}" data-thref="{url(m.group(1))}"',h)
     h=re.sub(r'data-evgo="([^"]*)"',lambda m:f'data-evgo="{m.group(1)}" data-href="{url(m.group(1))}"',h)
     h=re.sub(r'<button class="rt-go" data-rtto="[^"]*">.*?</button>',f'<a class="rt-go" href="../#d/{no}">🧭 도감에서 {html.escape(name)} 진화 루트 찾기</a>',h,flags=re.S)
     h=re.sub(r'<svg class="tree-svg"[^>]*>.*?</svg>',lambda m:re.sub(r'>.*?</svg>$','></svg>',m.group(0),flags=re.S),h,flags=re.S)
