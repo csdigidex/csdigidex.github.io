@@ -43,7 +43,7 @@ function rest(){if(pinned)show(pinned);else clear()}
 if(t){JSON.parse(t.dataset.edges).forEach(function(e){(down[e[0]]=down[e[0]]||[]).push(e[1])});
 q('[data-tn]').forEach(function(b){b.onmouseenter=function(){show(b)};b.onmouseleave=rest;b.onclick=function(){if(pinned===b&&b.dataset.thref){location.href=b.dataset.thref;return}pinned=(pinned===b)?null:b;rest()}});
 draw();addEventListener('resize',draw);addEventListener('load',draw);if(document.fonts)document.fonts.ready.then(draw)}
-document.addEventListener('click',function(e){var c=e.target.closest('[data-href]');if(!c||e.target.closest('a,button'))return;location.href=c.dataset.href});})();
+document.addEventListener('click',function(e){var m=e.target.closest('[data-mw]');if(m){var bx=m.closest('.sgbox');if(bx){bx.querySelectorAll('td.sel').forEach(function(x){x.classList.remove('sel')});m.classList.add('sel');bx.querySelector('.sgwhy').textContent=m.dataset.mw}return}var c=e.target.closest('[data-href]');if(!c||e.target.closest('a,button'))return;location.href=c.dataset.href});})();
 </script>"""
 cnt=0
 for no,raw in snap.items():
