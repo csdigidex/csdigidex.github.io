@@ -150,7 +150,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
 th{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.03em}
 td.n,th.n{text-align:right;font-family:var(--f-mono);white-space:nowrap}
-.tblwrap{overflow-x:auto}.sgbox{margin:12px 0 2px;border-top:1px dashed var(--line);padding-top:10px}.sgcap{font-size:13px;font-weight:600;color:var(--ink);display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}.sg td[data-mw]{cursor:pointer}.sg td.sel{outline:2px solid var(--ink);outline-offset:-2px}.sgwhy{margin:6px 0 0;font-size:13px;color:var(--ink);background:var(--bg);border-radius:8px;padding:7px 10px;line-height:1.5}.foebox{margin:18px 0 6px}.foebox>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:4px 0}.foebox>summary::-webkit-details-marker{display:none}.foebox>summary .sec{flex:1}.foebox>summary::after{content:'▾';color:var(--muted);transition:transform .15s}.foebox[open]>summary::after{transform:rotate(180deg)}.foebox[open] .foehint{display:none}
+.tblwrap{overflow-x:auto}.sgbox{margin:12px 0 2px;border-top:1px dashed var(--line);padding-top:10px}.sgcap{font-size:13px;font-weight:600;color:var(--ink);display:flex;gap:8px;flex-wrap:wrap;align-items:baseline;cursor:pointer;list-style:none}.sgcap::-webkit-details-marker{display:none}.sgcap::after{content:'▾';margin-left:auto;color:var(--muted);transition:transform .15s}.sgbox[open]>.sgcap::after{transform:rotate(180deg)}.sgbox:not([open])>.sgcap .why{display:none}.sig{min-width:0}.sgbox{min-width:0;max-width:100%}.sg-t,.sg-ht{display:none}.sg.sg-t{min-width:0;table-layout:fixed}.sg-t th.rh{width:70px}.sg-t thead th{font-size:11px;white-space:nowrap}.sg-t thead .tb img{width:13px;height:13px}.foechip{display:inline-flex;align-items:center;gap:6px;padding-left:4px}.foechip img{border-radius:8px;flex:none}@media (max-width:640px){.sg-w,.sg-hw{display:none}.sg-t{display:table}.sg-ht{display:inline}}.sg td[data-mw]{cursor:pointer}.sg td.sel{outline:2px solid var(--ink);outline-offset:-2px}.sgwhy{margin:6px 0 0;font-size:13px;color:var(--ink);background:var(--bg);border-radius:8px;padding:7px 10px;line-height:1.5}.foebox{margin:18px 0 6px}.foebox>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:4px 0}.foebox>summary::-webkit-details-marker{display:none}.foebox>summary .sec{flex:1}.foebox>summary::after{content:'▾';color:var(--muted);transition:transform .15s}.foebox[open]>summary::after{transform:rotate(180deg)}.foebox[open] .foehint{display:none}
 .back{display:none}
 .no{font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.02em}
 .row .nm{display:flex;align-items:center;gap:10px}
@@ -607,15 +607,18 @@ function sigCard(s, d){
     ${d && ATTACK_EL.includes(s.el) ? sgGrid(d, s) : ''}</div>`;
 }
 const SG_TRIBES = ["백신","데이터","바이러스","프리"], SG_ATTRS = ["불","물","풀","전기","바람","땅","빛","어둠","무"];
+let sgOpen = true;
 function sgGrid(d, s){
-  const cell = (tt, ta) => { const r = calcMult(d, s, tt, ta);
-    const cls = r.m >= 3 ? 'l3' : r.m >= 2 ? 'l2' : r.m < 1 ? 'l0' : '';
-    const f = `${tt}·${ta} → ${r.why.length ? r.why.join(' × ') : '상성 보정 없음'} = ×${fmt(r.m)}`;
-    return `<td class="${cls}" tabindex="0" role="button" data-mw="${esc(f)}">×${fmt(r.m)}</td>`; };
-  return `<div class="sgbox"><div class="sgcap">상성별 데미지 배율 <span class="why">상대 종족(세로) · 속성(가로)</span></div><div class="sglegend"><span><i style="background:var(--pierce-soft);outline:1px solid var(--pierce)"></i>×3 이상</span><span><i style="background:var(--accent-soft);outline:1px solid var(--accent)"></i>×2 이상</span><span><i style="background:var(--bg);outline:1px solid var(--line)"></i>보통</span><span><i style="background:var(--bg);opacity:.55;outline:1px solid var(--line)"></i>×1 미만</span></div>
-    <div class="tblwrap"><table class="sg"><thead><tr><th class="rh">상대 ↓ / →</th>${SG_ATTRS.map(a => `<th>${el(a)}</th>`).join('')}</tr></thead><tbody>` +
-    SG_TRIBES.map(tt => `<tr><th class="rh">${tt}</th>${SG_ATTRS.map(ta => cell(tt, ta)).join('')}</tr>`).join('') + `</tbody></table></div>
-    <p class="sgwhy" aria-live="polite">배율 칸을 누르면 계산식이 여기에 나와요.</p></div>`;
+  const R = {}; SG_TRIBES.forEach(tt => SG_ATTRS.forEach(ta => { const r = calcMult(d, s, tt, ta);
+    R[tt+'|'+ta] = { m: r.m, cls: r.m >= 3 ? 'l3' : r.m >= 2 ? 'l2' : r.m < 1 ? 'l0' : '', f: `${tt}·${ta} → ${r.why.length ? r.why.join(' × ') : '상성 보정 없음'} = ×${fmt(r.m)}` }; }));
+  const cell = (tt, ta) => { const r = R[tt+'|'+ta]; return `<td class="${r.cls}" tabindex="0" role="button" data-mw="${esc(r.f)}">×${fmt(r.m)}</td>`; };
+  const wide = `<table class="sg sg-w"><thead><tr><th class="rh">상대 ↓ / →</th>${SG_ATTRS.map(a => `<th>${el(a)}</th>`).join('')}</tr></thead><tbody>` +
+    SG_TRIBES.map(tt => `<tr><th class="rh">${tt}</th>${SG_ATTRS.map(ta => cell(tt, ta)).join('')}</tr>`).join('') + `</tbody></table>`;
+  const tall = `<table class="sg sg-t"><thead><tr><th class="rh"></th>${SG_TRIBES.map(tt => `<th>${tb(tt)}</th>`).join('')}</tr></thead><tbody>` +
+    SG_ATTRS.map(ta => `<tr><th class="rh">${el(ta)}</th>${SG_TRIBES.map(tt => cell(tt, ta)).join('')}</tr>`).join('') + `</tbody></table>`;
+  return `<details class="sgbox"${sgOpen ? ' open' : ''}><summary class="sgcap">상성별 데미지 배율 <span class="why sg-hw">상대 종족(세로) · 속성(가로)</span><span class="why sg-ht">상대 속성(세로) · 종족(가로)</span></summary><div class="sglegend"><span><i style="background:var(--pierce-soft);outline:1px solid var(--pierce)"></i>×3 이상</span><span><i style="background:var(--accent-soft);outline:1px solid var(--accent)"></i>×2 이상</span><span><i style="background:var(--bg);outline:1px solid var(--line)"></i>보통</span><span><i style="background:var(--bg);opacity:.55;outline:1px solid var(--line)"></i>×1 미만</span></div>
+    <div class="tblwrap">${wide}${tall}</div>
+    <p class="sgwhy" aria-live="polite">배율 칸을 누르면 계산식이 여기에 나와요.</p></details>`;
 }
 document.addEventListener('click', e => { const c = e.target.closest('[data-mw]'); if (!c) return; const box = c.closest('.sgbox'); if (!box) return;
   box.querySelectorAll('td.sel').forEach(x => x.classList.remove('sel')); c.classList.add('sel'); box.querySelector('.sgwhy').textContent = c.dataset.mw; });
@@ -812,6 +815,8 @@ function renderFile(){
   f.querySelectorAll('[data-scope]').forEach(b => b.onclick = () => { rankScope = b.dataset.scope; const y = f.scrollTop, wy = window.scrollY; renderFile(); f.scrollTop = y; window.scrollTo(0, wy); });
   f.querySelectorAll('[data-fst]').forEach(b => b.onclick = () => { foeStage = b.dataset.fst; const y = f.scrollTop, wy = window.scrollY; renderFile(); f.scrollTop = y; window.scrollTo(0, wy); });
   f.querySelectorAll('details.foebox').forEach(x => x.ontoggle = () => { foeOpen = x.open; });
+  f.querySelectorAll('details.sgbox').forEach(x => x.ontoggle = () => { if (x.dataset.init) sgOpen = x.open; });
+  requestAnimationFrame(() => f.querySelectorAll('details.sgbox').forEach(x => x.dataset.init = 1));
   const b = $('#back'); if (b) b.onclick = closeFile;
 }
 
@@ -852,10 +857,12 @@ function foeTabs(d, foes){
   }
   const g = groups.find(g => g.st === cur);
   return `<div class="foetabs" role="tablist">${groups.map(x => `<button class="foetab" role="tab" aria-selected="${x.st===cur}" data-fst="${esc(x.st)}">${esc(x.st)}${x.st===d.stage?' <span class="why">같은 세대</span>':''} <b>${x.list.length}</b></button>`).join('')}</div>
-    <div class="foes">${g.list.map(o => `<button class="chip" data-go="${esc(o.x.name)}" title="${esc(o.r.s.name)}: ${esc(o.r.why.join(' · '))}">${esc(o.x.name)}<b>×${fmt(o.r.m)}</b></button>`).join('')}</div>`;
+    <div class="foes">${g.list.map(o => `<button class="chip foechip" data-go="${esc(o.x.name)}" title="${esc(o.r.s.name)}: ${esc(o.r.why.join(' · '))}">${o.x.icon ? `<img src="${o.x.icon}" alt="" width="28" height="28" loading="lazy">` : ''}${esc(o.x.name)}<b>×${fmt(o.r.m)}</b></button>`).join('')}</div>`;
 }
 let foeOpen = false;
+let foeFor = null;
 function strengthBlock(d){
+  if (foeFor !== d.name) { foeFor = d.name; foeOpen = false; }
   const atk = d.signatures.filter(s => ATTACK_EL.includes(s.el));
   if (!atk.length) return '';
   const best = (tt, ta) => atk.map(s => ({ s, ...calcMult(d, s, tt, ta) })).sort((a,b) => b.m - a.m || (!!b.s.pierce - !!a.s.pierce))[0];
@@ -1202,7 +1209,7 @@ window.addEventListener('popstate', () => {
     ['찾는 디지몬이 없어요','No Digimon found'],['찾는 아이템이 없어요.','No items found.'],['조건에 맞는 디지몬이 없어요.','No matching Digimon.'],
     ['검색어나 필터를 바꿔 보세요.','Try another search or filter.'],['파트너 디지몬 테스트','Partner Digimon Test'],['디지몬 목록','Digimon list'],
     ['종족 상성','Attribute matchups'],['속성 상성','Element matchups'],['추천 육성 루트','Recommended training route'],['목적별 공략','Guides by goal'],['해킹 스킬','Hacking Skills'],
-    ['이 디지몬이 강한 상대','Strong against'],['상성별 데미지 배율','Damage multiplier by matchup'],['상대 종족(세로) · 속성(가로)','Foe attribute (rows) · element (columns)'],['펼쳐 보기','Show'],['등록된 디지몬 중 필살기로 ×2 이상 데미지를 줄 수 있는 상대예요. 세대를 누르면 그 세대 목록이 보여요.','Registered Digimon this Digimon can hit for ×2 or more with a signature move. Tap a stage to see that list.'],['배율 칸을 누르면 계산식이 여기에 나와요.','Tap a multiplier to see how it is calculated.'],['상성 보정 없음','no matchup bonus'],['종족 유리','Attribute advantage'],['종족 불리','Attribute disadvantage'],['속성 유리','Element advantage'],['관통 필살기 보유만','Pierce moves only'],['배틀멤버 전체','all party members'],['배틀 멤버 전체','all party members'],
+    ['이 디지몬이 강한 상대','Strong against'],['상성별 데미지 배율','Damage multiplier by matchup'],['상대 종족(세로) · 속성(가로)','Foe attribute (rows) · element (columns)'],['상대 속성(세로) · 종족(가로)','Foe element (rows) · attribute (columns)'],['펼쳐 보기','Show'],['등록된 디지몬 중 필살기로 ×2 이상 데미지를 줄 수 있는 상대예요. 세대를 누르면 그 세대 목록이 보여요.','Registered Digimon this Digimon can hit for ×2 or more with a signature move. Tap a stage to see that list.'],['배율 칸을 누르면 계산식이 여기에 나와요.','Tap a multiplier to see how it is calculated.'],['상성 보정 없음','no matchup bonus'],['종족 유리','Attribute advantage'],['종족 불리','Attribute disadvantage'],['속성 유리','Element advantage'],['관통 필살기 보유만','Pierce moves only'],['배틀멤버 전체','all party members'],['배틀 멤버 전체','all party members'],
     ['막대 길이는 등록된 디지몬 중 최고값 대비 비율이에요. 순위는 스테이터스가 등록된 디지몬끼리 비교해요.','Bar length is relative to the highest registered value. Ranks compare registered Digimon only.'],
     ['이 디지몬이 레벨업으로 배우는 스킬이에요. 배운 스킬은 진화·퇴화해도 계속 쓸 수 있어요.','Skills learned by leveling up. Learned skills stay after digivolving or de-digivolving.'],
     ['상대 종족(세로)과 속성(가로)별로 이 디지몬의 공격 필살기 중 가장 높은 배율이에요.','Best multiplier of this Digimon\'s attack moves by opponent attribute (rows) and element (columns).'],
