@@ -8,7 +8,7 @@
 <meta property="og:type" content="website"><meta property="og:site_name" content="디지몬 스토리 사이버 슬루스 도감">
 <meta property="og:title" content="나의 파트너 디지몬은? - 파트너 디지몬 테스트 (디지몬 MBTI)">
 <meta property="og:description" content="22개 질문으로 성장기 디지몬 51종 중 나와 닮은 파트너와 나를 보완해주는 파트너, 그리고 될 수 있는 궁극체까지! 친구와 파트너 배틀도 붙어 보세요!">
-<meta property="og:url" content="https://csdigidex.github.io/test/"><meta property="og:image" content="https://csdigidex.github.io/og.jpg"><meta property="og:locale" content="ko_KR">
+<meta property="og:url" content="https://csdigidex.github.io/test/"><meta property="og:image" content="https://csdigidex.github.io/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="ko_KR">
 <meta name="keywords" content="파트너 디지몬 테스트, 디지몬 테스트, 디지몬 MBTI, 디지몬 mbti, 디지몬 MBTI 검사, 디지몬 MBTI 테스트, MBTI 검사, MBTI 테스트, mbti 검사, 무료 MBTI 검사, MBTI 성격 유형 검사, 성격 테스트, 심리 테스트, 디지몬 심리 테스트, 디지몬 성향 테스트, 파트너 디지몬 찾기, 나의 파트너 디지몬, 디지몬 어드벤처 파트너 테스트, Digimon MBTI, Digimon personality test, 버거몬의 디지덱스, 디지몬 도감, 사이버슬루스 도감, 파트너 디지몬, 디지몬 테스트, 디지몬 MBTI, 디지몬 MBTI 테스트, 디지몬 성격 테스트, 내 파트너 디지몬, 파트너 디지몬, 나와 닮은 디지몬, 디지몬 성격 테스트, 사이버 슬루스">
 <link rel="icon" type="image/png" sizes="32x32" href="../icon-32.png">
 <meta name="description" content="파트너 디지몬 테스트 · 디지몬 MBTI 검사 | 무료 22문항 MBTI 테스트로 알아보는 나와 닮은 파트너 디지몬과 나를 보완해주는 파트너 디지몬. 디지몬 스토리 사이버 슬루스 성장기 51종 중 단 하나!">
@@ -177,9 +177,9 @@ function showResult(me,pct,shared){const d=D[me],t=d.mbti,mate=mateOf(t,me),m=D[
  show('result');requestAnimationFrame(()=>fitText($('#result')));document.fonts&&document.fonts.ready.then(()=>fitText($('#result')));
  const url=()=>location.origin+location.pathname+'?r='+encodeURIComponent(me)+'&s='+SEED+'&a='+encodeURIComponent(UA)+'&t='+encodeURIComponent(UT);
  const my={me,mate};
- if(!shared){$('#share').onclick=()=>pickTeam(my,'어느 팀으로 배틀을 신청할까요?',k=>{const n=k===1?me:mate;shareIt(location.origin+location.pathname+'?c='+enc({n,k,s:SEED}),`⚔️ 내 파트너 ${n} 팀이 배틀을 신청했어! 너의 파트너 디지몬으로 맞서 볼래?`,'challenge',n)},$('#share'),'고른 팀(궁극체 3마리)으로 배틀 신청 링크를 만들어요. 친구가 링크를 열고 테스트를 마치면 친구의 팀과 3라운드 배틀이 벌어져요. 내 팀은 친구가 팀을 고르기 전까지 공개되지 않아요.');
+ if(!shared){$('#share').onclick=()=>pickTeam(my,'어느 팀으로 배틀을 신청할까요?',k=>{const n=k===1?me:mate;shareIt(location.origin+location.pathname.replace(/[^/]*$/,'')+'b.html?c='+enc({n,k,s:SEED}),`⚔️ 내 파트너 ${n} 팀이 배틀을 신청했어! 너의 파트너 디지몬으로 맞서 볼래?`,'challenge',n)},$('#share'),'고른 팀(궁극체 3마리)으로 배틀 신청 링크를 만들어요. 친구가 링크를 열고 테스트를 마치면 친구의 팀과 3라운드 배틀이 벌어져요. 내 팀은 친구가 팀을 고르기 전까지 공개되지 않아요.');
   if(CH){$('#battleBox').innerHTML=`<div class="card" style="text-align:center;border-color:var(--accent2)"><div class="lbl" style="color:var(--accent2)">⚔️ 친구의 배틀 신청이 와 있어요!</div><p class="sub">배틀에 나갈 내 팀을 골라 주세요. 상대 팀은 고르는 순간 공개돼요.</p><button class="btn" id="accept">팀 고르고 배틀 시작</button></div>`;
-   $('#accept').onclick=()=>pickTeam(my,'배틀에 나갈 팀을 고르세요',k=>{const B={n:k===1?me:mate,k,s:SEED};gc('battle');$('#battleBox').innerHTML=battleHTML(CH,B,'친구','나')+`<button class="btn" id="vshare" style="margin-bottom:8px">배틀 결과 공유하기</button>`;fitText($('#battleBox'));$('#battleBox').scrollIntoView({behavior:'smooth'});$('#vshare').onclick=()=>shareIt(location.origin+location.pathname+'?v='+enc({A:CH,B}),'⚔️ 파트너 디지몬 배틀 결과를 확인해 봐!','vshare')},$('#accept'));}}
+   $('#accept').onclick=()=>pickTeam(my,'배틀에 나갈 팀을 고르세요',k=>{const B={n:k===1?me:mate,k,s:SEED};gc('battle');$('#battleBox').innerHTML=battleHTML(CH,B,'친구','나')+`<button class="btn" id="vshare" style="margin-bottom:8px">배틀 결과 공유하기</button>`;fitText($('#battleBox'));$('#battleBox').scrollIntoView({behavior:'smooth'});$('#vshare').onclick=()=>shareIt(location.origin+location.pathname.replace(/[^/]*$/,'')+'b.html?v='+enc({A:CH,B}),'⚔️ 파트너 디지몬 배틀 결과를 확인해 봐!','vshare')},$('#accept'));}}
  $('#again').onclick=restart;}
 function restart(){ans=[];step=0;history.replaceState(null,'',location.pathname+(CH?'?c='+P.get('c'):''));intro();show('intro')}
 function enc(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
