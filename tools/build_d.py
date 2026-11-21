@@ -52,6 +52,15 @@ for no,raw in snap.items():
     old=open(f,encoding='utf-8').read()
     head=old[:old.find('</head>')]
     head=re.sub(r'<style>.*?</style>','',head,count=1,flags=re.S)
+    head=head.replace('| 사이버 슬루스 도감','| 사이버 슬루스 공략 도감').replace('디지몬 스토리 사이버 슬루스 도감에서','디지몬 스토리 사이버 슬루스 공략 도감에서')
+    if '"BreadcrumbList"' not in head:
+        dd=next((x for x in D['digimon'] if str(x.get('no'))==str(no)),None)
+        if dd:
+            bc={"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
+                {"@type":"ListItem","position":1,"name":"디지몬 스토리 사이버 슬루스 공략 도감","item":"https://csdigidex.github.io/"},
+                {"@type":"ListItem","position":2,"name":dd['stage'],"item":"https://csdigidex.github.io/#"+dd['stage']},
+                {"@type":"ListItem","position":3,"name":dd['name'],"item":f"https://csdigidex.github.io/d/{int(no):03d}.html"}]}
+            head+='<script type="application/ld+json">'+json.dumps(bc,ensure_ascii=False)+'</script>'
     if 'app.css' not in head:
         head+='<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"><link rel="stylesheet" href="../app.css">'
     body=old[old.find('<body'):]
